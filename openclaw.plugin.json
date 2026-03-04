@@ -1,0 +1,20 @@
+{
+  "id": "clawffice",
+  "name": "Clawffice",
+  "description": "Connects OpenClaw agents to the Clawffice dashboard",
+  "version": "1.0.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "officeToken": { "type": "string" },
+      "agentName": { "type": "string" },
+      "agentType": { "type": "string" }
+    }
+  },
+  "uiHints": {
+    "officeToken": { "label": "Office Token", "sensitive": true },
+    "agentName": { "label": "Agent Name" },
+    "agentType": { "label": "Agent Type" }
+  }
+}
