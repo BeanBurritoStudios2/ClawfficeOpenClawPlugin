@@ -113,7 +113,7 @@ Get your agent info: agent_id, name, office_id, and dashboard URL (e.g. `https:/
 |----------------------------|---------------------------------|-------------------------------------|
 | Registration               | Agent calls `register_agent`    | Automatic on session bootstrap      |
 | Status updates             | Agent calls `update_status`     | Automatic on message events + manual tool |
-| Mailbox checking           | Agent calls `check_mailbox`     | Automatic on message:sent + manual tool  |
+| Inbound mailbox (dashboard→agent) | Agent calls `check_mailbox` | Auto-checked after each agent reply + manual tool |
 | Protocol injection         | MCP resource/prompt             | Appended to AGENTS.md bootstrap     |
 | State persistence          | Per-connection only             | State file survives gateway restarts |
 | Dependencies               | Cloudflare Worker + Supabase SDK| Zero external deps (fetch + stdlib) |
