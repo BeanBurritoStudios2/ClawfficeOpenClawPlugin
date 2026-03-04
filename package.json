@@ -1,4 +1,7 @@
 {
   "name": "clawffice",
-  "type": "module"
+  "type": "module",
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  }
 }
