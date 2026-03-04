@@ -246,33 +246,56 @@ export default function register(api: OpenClawPluginApi) {
           }
         }
 
-        // Find or create agent
-        const existing = await supabaseGet<Array<{ id: string; name: string; status: string }>>(
-          env.supabaseUrl, env.supabaseKey,
-          `/agents?office_id=eq.${cachedOfficeId}&name=eq.${encodeURIComponent(agentName)}&select=id,name,status&order=created_at.desc&limit=1`,
-        );
-
+        // Persistent agent identity: state file is source of truth.
+        // Try to reclaim stored agentId first; only create new if it doesn't exist.
+        const storedState = loadStateFile();
         let agentId: string;
-        if (existing.length) {
-          agentId = existing[0].id;
-          // Update heartbeat on re-registration
-          await supabasePatch(env.supabaseUrl, env.supabaseKey, `/agents?id=eq.${agentId}`, {
-            status: "idle",
-            task_description: "",
-            last_heartbeat: new Date().toISOString(),
-          });
-        } else {
-          const created = await supabasePost<Array<{ id: string }>>(
-            env.supabaseUrl, env.supabaseKey, "/agents",
-            {
-              office_id: cachedOfficeId,
-              name: agentName,
-              agent_type: agentType,
-              status: "idle",
-              last_heartbeat: new Date().toISOString(),
-            },
+
+        if (storedState.agentId) {
+          // Verify stored agent still exists in Supabase
+          const rows = await supabaseGet<Array<{ id: string }>>(
+            env.supabaseUrl, env.supabaseKey,
+            `/agents?id=eq.${storedState.agentId}&office_id=eq.${cachedOfficeId}&select=id`,
           );
-          agentId = created[0].id;
+          if (rows.length) {
+            // Reclaim: touch heartbeat, keep same UUID forever
+            agentId = rows[0].id;
+            await supabasePatch(env.supabaseUrl, env.supabaseKey, `/agents?id=eq.${agentId}`, {
+              status: "idle",
+              task_description: "",
+              last_heartbeat: new Date().toISOString(),
+            });
+            api.logger.info(`[clawffice] Reclaimed persistent agent: ${agentName} (${agentId})`);
+          } else {
+            // Stored ID no longer in DB (deleted from dashboard) — create fresh
+            api.logger.warn(`[clawffice] Stored agent ${storedState.agentId} not found — creating new one`);
+            const created = await supabasePost<Array<{ id: string }>>(
+              env.supabaseUrl, env.supabaseKey, "/agents",
+              { office_id: cachedOfficeId, name: agentName, agent_type: agentType, status: "idle", last_heartbeat: new Date().toISOString() },
+            );
+            agentId = created[0].id;
+            api.logger.info(`[clawffice] Created new agent: ${agentName} (${agentId})`);
+          }
+        } else {
+          // First install — check if agent with this name already exists (idempotent install)
+          const existing = await supabaseGet<Array<{ id: string }>>(
+            env.supabaseUrl, env.supabaseKey,
+            `/agents?office_id=eq.${cachedOfficeId}&name=eq.${encodeURIComponent(agentName)}&select=id&order=created_at.desc&limit=1`,
+          );
+          if (existing.length) {
+            agentId = existing[0].id;
+            await supabasePatch(env.supabaseUrl, env.supabaseKey, `/agents?id=eq.${agentId}`, {
+              status: "idle", task_description: "", last_heartbeat: new Date().toISOString(),
+            });
+            api.logger.info(`[clawffice] Found existing agent on first run: ${agentName} (${agentId})`);
+          } else {
+            const created = await supabasePost<Array<{ id: string }>>(
+              env.supabaseUrl, env.supabaseKey, "/agents",
+              { office_id: cachedOfficeId, name: agentName, agent_type: agentType, status: "idle", last_heartbeat: new Date().toISOString() },
+            );
+            agentId = created[0].id;
+            api.logger.info(`[clawffice] Registered new agent: ${agentName} (${agentId})`);
+          }
         }
 
         // Store session
