@@ -51,12 +51,16 @@ CLAWFFICE_SUPABASE_URL=https://xxx.supabase.co
 CLAWFFICE_SUPABASE_SERVICE_KEY=your-service-key
 ```
 
-On macOS, set these in the LaunchAgent plist or via `launchctl setenv`:
+On macOS with a LaunchAgent, the most reliable way is to add them directly to the plist's `EnvironmentVariables` dict (e.g. `~/Library/LaunchAgents/ai.openclaw.gateway.plist`):
 
-```bash
-launchctl setenv CLAWFFICE_SUPABASE_URL "https://xxx.supabase.co"
-launchctl setenv CLAWFFICE_SUPABASE_SERVICE_KEY "your-service-key"
+```xml
+<key>CLAWFFICE_SUPABASE_URL</key>
+<string>https://xxx.supabase.co</string>
+<key>CLAWFFICE_SUPABASE_SERVICE_KEY</key>
+<string>your-service-key</string>
 ```
+
+Then reload the LaunchAgent for the changes to take effect. The plugin logs `[clawffice] Service started. Credentials present.` on successful startup (check `~/.openclaw/logs/gateway.log`).
 
 ## How It Works
 
