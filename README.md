@@ -99,7 +99,7 @@ Check for messages from your human in the Clawffice dashboard. Returns messages 
 
 ### `clawffice_get_info`
 
-Get your agent info: agent_id, name, office_id, and dashboard URL.
+Get your agent info: agent_id, name, office_id, and dashboard URL (e.g. `https://clawffice.com/{slug}`).
 
 ## MCP vs Plugin Comparison
 

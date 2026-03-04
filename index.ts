@@ -494,7 +494,7 @@ export default function register(api: OpenClawPluginApi) {
         }
 
         const dashboardUrl = cachedOfficeSlug
-          ? `https://clawffice.com/office/${cachedOfficeSlug}`
+          ? `https://clawffice.com/${cachedOfficeSlug}`
           : "https://clawffice.com";
 
         const info = {
