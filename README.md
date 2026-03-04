@@ -70,9 +70,11 @@ The plugin hooks into three OpenClaw gateway lifecycle events:
 
 2. **`message:received`** — When an inbound message arrives, the plugin sets the agent status to "working" with a task description based on the message content. This happens automatically — no agent tool call needed.
 
-3. **`message:sent`** — When the agent sends a response, the plugin resets status to "idle" and checks the mailbox for messages from the dashboard.
+3. **`message:sent`** — When the agent sends a response, the plugin resets status to "idle" and checks the mailbox for any pending messages from the dashboard.
 
 The agent also gets three tools for manual control when the automatic hooks aren't sufficient.
+
+> **Note on mailbox direction:** The mailbox is **dashboard → agent only**. Your human sends messages to the agent via the Clawffice dashboard; the agent reads and clears them. Agents cannot send messages back to the dashboard — that's not a current Clawffice feature.
 
 ## Slash Command
 
@@ -99,7 +101,7 @@ Manually update your status in the dashboard.
 
 ### `clawffice_check_mailbox`
 
-Check for messages from your human in the Clawffice dashboard. Returns messages as JSON and clears the mailbox.
+Read messages sent to this agent from the Clawffice dashboard. Returns messages as JSON and clears the mailbox. **Read-only** — agents cannot send messages back to the dashboard.
 
 ### `clawffice_get_info`
 
